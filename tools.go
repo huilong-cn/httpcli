@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
-	"time"
 
 	"github.com/ziipin-server/niuhe"
 )
@@ -86,39 +84,39 @@ const MAX_RETRY_TIMES = 3
 //do3 do three times
 
 func do3(req *http.Request) (*http.Response, error) {
-	return DoN(DefaultHttpClient(), req, MAX_RETRY_TIMES)
+	return DefaultHttpClient().DoN(req, MAX_RETRY_TIMES)
 }
 
-//DoN retry N when network error, except timeout error
-func DoN(client *http.Client, req *http.Request, retries int) (*http.Response, error) {
-	if retries < 1 { //修正最少次数为1
-		retries = 1
-	}
-	for i := 0; i < retries; i++ {
-		rsp, err := client.Do(req)
-		if err != nil {
-			niuhe.LogError("do request url(%s) error : %s", req.URL, err)
-			niuhe.LogError("do retry times:%d", i)
-			if urlerr, ok := err.(*url.Error); ok && urlerr.Timeout() { // stop retry when timeout error
-				httprequest, _ := httputil.DumpRequest(req, false)
-				niuhe.LogError("request url(%s), req(%s) error : %s", req.URL.String(), string(httprequest), err.Error())
-				if timeoutCallback != nil {
-					timeoutCallback("HTTPCLI-TIMEOUT", fmt.Sprintf("request url(%s), req(%s) error : %s", req.URL.String(), string(httprequest), err.Error()))
-				}
-				return nil, err
-			}
-			time.Sleep((time.Second * time.Duration(i+1)))
-			continue
-		}
-		return rsp, nil
-	}
-	httprequest, _ := httputil.DumpRequest(req, false)
-	niuhe.LogError("do retry %d times url:%s failed request:%s", retries, req.URL, string(httprequest))
-	if timeoutCallback != nil {
-		timeoutCallback("HTTPCLI-RETRY", fmt.Sprintf("request url(%s), req(%s) error max retry", req.URL.String(), string(httprequest)))
-	}
-	return nil, fmt.Errorf("httpcli DoN:%d request err", retries)
-}
+// //DoN retry N when network error, except timeout error
+// func DoN(client *http.Client, req *http.Request, retries int) (*http.Response, error) {
+// 	if retries < 1 { //修正最少次数为1
+// 		retries = 1
+// 	}
+// 	for i := 0; i < retries; i++ {
+// 		rsp, err := client.Do(req)
+// 		if err != nil {
+// 			niuhe.LogError("do request url(%s) error : %s", req.URL, err)
+// 			niuhe.LogError("do retry times:%d", i)
+// 			if urlerr, ok := err.(*url.Error); ok && urlerr.Timeout() { // stop retry when timeout error
+// 				httprequest, _ := httputil.DumpRequest(req, false)
+// 				niuhe.LogError("request url(%s), req(%s) error : %s", req.URL.String(), string(httprequest), err.Error())
+// 				if timeoutCallback != nil {
+// 					timeoutCallback("HTTPCLI-TIMEOUT", fmt.Sprintf("request url(%s), req(%s) error : %s", req.URL.String(), string(httprequest), err.Error()))
+// 				}
+// 				return nil, err
+// 			}
+// 			time.Sleep((time.Second * time.Duration(i+1)))
+// 			continue
+// 		}
+// 		return rsp, nil
+// 	}
+// 	httprequest, _ := httputil.DumpRequest(req, false)
+// 	niuhe.LogError("do retry %d times url:%s failed request:%s", retries, req.URL, string(httprequest))
+// 	if timeoutCallback != nil {
+// 		timeoutCallback("HTTPCLI-RETRY", fmt.Sprintf("request url(%s), req(%s) error max retry", req.URL.String(), string(httprequest)))
+// 	}
+// 	return nil, fmt.Errorf("httpcli DoN:%d request err", retries)
+// }
 
 func DecodeWrap(body []byte, rsp interface{}) error {
 	wrapRsp := new(Wrap)
