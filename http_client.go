@@ -15,8 +15,10 @@ type HttpCli struct {
 	*http.Client
 }
 
-//Post form http post
-func (httpcli *HttpCli) Post(url string, values url.Values, extendHeader http.Header) ([]byte, error) {
+const MAX_RETRY_TIMES = 3 //default try times
+
+//FormPost form http post
+func (httpcli *HttpCli) FormPost(url string, values url.Values, extendHeader http.Header) ([]byte, error) {
 	request, err := GenFormRequest(url, values, extendHeader)
 	if err != nil {
 		return EmptyBody, err
