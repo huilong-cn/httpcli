@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-func Get(url string, values url.Values, extendHeader http.Header) ([]byte, error) {
+func FormGet(url string, values url.Values, extendHeader http.Header) ([]byte, error) {
 	return DefaultHttpClient().FormGet(url, values, extendHeader)
 }
 
