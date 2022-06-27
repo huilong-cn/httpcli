@@ -45,9 +45,6 @@ func GenFormRequest(url string, values url.Values, extendHeader http.Header) (*h
 		niuhe.LogError("genGetRequest url : %s, err: %s", url, err.Error())
 		return nil, err
 	}
-	if values != nil {
-		request.URL.RawQuery = values.Encode()
-	}
 	request.Form = values
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	fillExtendHeader(request, extendHeader)
