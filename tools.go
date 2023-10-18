@@ -24,8 +24,8 @@ func Values() url.Values {
 }
 
 const (
-	TokenBearer = "Bearer"
-	TokenBasic  = "Basic"
+	Bearer = "Bearer"
+	Basic  = "Basic"
 )
 
 // BearerHeader return header.Add("Authorization", "Bearer "+token)
