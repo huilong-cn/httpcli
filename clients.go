@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-var (
-	httpClient *http.Client
-)
-
 type clientFactory struct {
 	sync.Mutex
 	clients map[string]*HttpCli

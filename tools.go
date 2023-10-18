@@ -23,7 +23,23 @@ func Values() url.Values {
 	return make(url.Values)
 }
 
-//genGetRequest 生成 Get url raw query request
+const (
+	TokenBearer = "Bearer"
+	TokenBasic  = "Basic"
+)
+
+// BearerHeader return header.Add("Authorization", "Bearer "+token)
+// tokenType a
+func HeaderWithAuth(tokenType, token string) http.Header {
+	autheader := Header()
+	autheader.Set(Auth(tokenType, token))
+	return autheader
+}
+func Auth(tokenType, token string) (string, string) {
+	return "Authorization", tokenType + " " + token
+}
+
+// genGetRequest 生成 Get url raw query request
 func GenUrlRequest(url string, values url.Values, extendHeader http.Header) (*http.Request, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -38,7 +54,7 @@ func GenUrlRequest(url string, values url.Values, extendHeader http.Header) (*ht
 	return request, nil
 }
 
-//genGetRequest 生成 Get url raw query request
+// genGetRequest 生成 Get url raw query request
 func GenFormRequest(url string, values url.Values, extendHeader http.Header) (*http.Request, error) {
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader([]byte(values.Encode())))
 	if err != nil {
@@ -52,7 +68,7 @@ func GenFormRequest(url string, values url.Values, extendHeader http.Header) (*h
 	return request, nil
 }
 
-//genJsonRequest  gen application/json post request
+// genJsonRequest  gen application/json post request
 func GenJsonRequest(url string, requestData interface{}, extendHeader http.Header) (*http.Request, error) {
 	requestBytes, err := json.Marshal(requestData)
 	if err != nil {
@@ -67,7 +83,7 @@ func GenJsonRequest(url string, requestData interface{}, extendHeader http.Heade
 	return request, nil
 }
 
-//fillExtendHeader 填充扩展HEADER
+// fillExtendHeader 填充扩展HEADER
 func fillExtendHeader(request *http.Request, extendHeader http.Header) {
 	for key, values := range extendHeader {
 		for _, value := range values {
