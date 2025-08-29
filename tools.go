@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"net"
 	"net/http"
 	"net/url"
 
@@ -119,7 +120,7 @@ func DecodeUnwrap(body []byte, rsp interface{}) error {
 }
 
 func ReadBody(resp *http.Response) ([]byte, error) {
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		niuhe.LogError("DecodeWrap status :%s read resp.Body fail: %s", resp.Status, err.Error())
 		return EmptyBody, err
@@ -132,4 +133,15 @@ func IsStatusOK(resp *http.Response) error {
 		return fmt.Errorf("Bad HTTP Status: %s", resp.Status)
 	}
 	return nil
+}
+
+// 判断HTTP 返回是否 http request timeout 但不包括 dial timeout
+func Timeout(err error) bool {
+	if urlerr, ok := err.(*url.Error); ok && urlerr.Timeout() {
+		if neterr, ok := urlerr.Unwrap().(*net.OpError); ok && neterr.Op == "dial" { // 忽略 dail
+			return false
+		}
+		return true
+	}
+	return false
 }

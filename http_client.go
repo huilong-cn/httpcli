@@ -2,7 +2,7 @@ package httpcli
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -17,7 +17,7 @@ type HttpCli struct {
 
 const MAX_RETRY_TIMES = 3 //default try times
 
-//FormPost form http post
+// FormPost form http post
 func (httpcli *HttpCli) FormPost(url string, values url.Values, extendHeader http.Header) ([]byte, error) {
 	request, err := GenFormRequest(url, values, extendHeader)
 	if err != nil {
@@ -40,7 +40,7 @@ func (httpcli *HttpCli) FormPost(url string, values url.Values, extendHeader htt
 	return body, nil
 }
 
-//Post form http post req[json] wrap(rsp)[json]
+// Post form http post req[json] wrap(rsp)[json]
 func (httpcli *HttpCli) PostWrap(url string, values url.Values, rsp interface{}, extendHeader http.Header) error {
 	request, err := GenFormRequest(url, values, extendHeader)
 	if err != nil {
@@ -67,7 +67,7 @@ func (httpcli *HttpCli) PostWrap(url string, values url.Values, rsp interface{},
 	return nil
 }
 
-//PostUnwrap form http post req[json] (rsp)[json]
+// PostUnwrap form http post req[json] (rsp)[json]
 func (httpcli *HttpCli) PostUnwrap(url string, values url.Values, rsp interface{}, extendHeader http.Header) error {
 	request, err := GenFormRequest(url, values, extendHeader)
 	if err != nil {
@@ -94,7 +94,7 @@ func (httpcli *HttpCli) PostUnwrap(url string, values url.Values, rsp interface{
 	return nil
 }
 
-//JsonPost http post req[json] wrap(rsp)[json]
+// JsonPost http post req[json] wrap(rsp)[json]
 func (httpcli *HttpCli) JsonPost(url string, req interface{}, rsp interface{}, extendHeader http.Header) error {
 	request, err := GenJsonRequest(url, req, extendHeader)
 	if err != nil {
@@ -158,7 +158,7 @@ func (httpcli *HttpCli) FormGet(url string, values url.Values, extendHeader http
 		return EmptyBody, err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		niuhe.LogError("DecodeWrap status :%s read resp.Body fail: %s", resp.Status, err.Error())
 		return EmptyBody, err
@@ -212,7 +212,7 @@ func (httpcli *HttpCli) do3(req *http.Request) (*http.Response, error) {
 	return httpcli.DoN(req, MAX_RETRY_TIMES)
 }
 
-//DoN retry N when network error, except timeout error
+// DoN retry N when network error, except timeout error
 func (httpcli *HttpCli) DoN(req *http.Request, retries int) (*http.Response, error) {
 	if retries < 1 { //修正最少次数为1
 		retries = 1
@@ -222,7 +222,7 @@ func (httpcli *HttpCli) DoN(req *http.Request, retries int) (*http.Response, err
 		if err != nil {
 			niuhe.LogError("do request url(%s) error : %s", req.URL, err)
 			niuhe.LogError("do retry times:%d", i)
-			if urlerr, ok := err.(*url.Error); ok && urlerr.Timeout() { // stop retry when timeout error
+			if Timeout(err) { // stop retry when timeout error
 				httprequest, _ := httputil.DumpRequest(req, false)
 				niuhe.LogError("request url(%s), req(%s) error : %s", req.URL.String(), string(httprequest), err.Error())
 				if timeoutCallback != nil {
