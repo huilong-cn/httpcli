@@ -42,21 +42,9 @@ func (httpcli *HttpCli) FormPost(url string, values url.Values, extendHeader htt
 
 // Post form http post req[json] wrap(rsp)[json]
 func (httpcli *HttpCli) PostWrap(url string, values url.Values, rsp interface{}, extendHeader http.Header) error {
-	request, err := GenFormRequest(url, values, extendHeader)
+	body, err := httpcli.FormPost(url, values, extendHeader)
 	if err != nil {
-		return err
-	}
-	resp, err := httpcli.do3(request)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	err = IsStatusOK(resp)
-	if err != nil {
-		return err
-	}
-	body, err := ReadBody(resp)
-	if err != nil {
+		niuhe.LogError("PostWrap url : %s req : %v, err : %s", url, values, err)
 		return err
 	}
 	err = DecodeWrap(body, rsp)
@@ -69,21 +57,9 @@ func (httpcli *HttpCli) PostWrap(url string, values url.Values, rsp interface{},
 
 // PostUnwrap form http post req[json] (rsp)[json]
 func (httpcli *HttpCli) PostUnwrap(url string, values url.Values, rsp interface{}, extendHeader http.Header) error {
-	request, err := GenFormRequest(url, values, extendHeader)
+	body, err := httpcli.FormPost(url, values, extendHeader)
 	if err != nil {
-		return err
-	}
-	resp, err := httpcli.do3(request)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	err = IsStatusOK(resp)
-	if err != nil {
-		return err
-	}
-	body, err := ReadBody(resp)
-	if err != nil {
+		niuhe.LogError("PostWrap url : %s req : %v, err : %s", url, values, err)
 		return err
 	}
 	err = DecodeUnwrap(body, rsp)
@@ -96,20 +72,7 @@ func (httpcli *HttpCli) PostUnwrap(url string, values url.Values, rsp interface{
 
 // JsonPost http post req[json] wrap(rsp)[json]
 func (httpcli *HttpCli) JsonPost(url string, req interface{}, rsp interface{}, extendHeader http.Header) error {
-	request, err := GenJsonRequest(url, req, extendHeader)
-	if err != nil {
-		return err
-	}
-	resp, err := httpcli.do3(request)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	err = IsStatusOK(resp)
-	if err != nil {
-		return err
-	}
-	body, err := ReadBody(resp)
+	body, err := httpcli.JsonPostBytes(url, req, extendHeader)
 	if err != nil {
 		return err
 	}
@@ -123,20 +86,7 @@ func (httpcli *HttpCli) JsonPost(url string, req interface{}, rsp interface{}, e
 
 // JsonPostUnwrap http post json rsp => json
 func (httpcli *HttpCli) JsonPostUnwrap(url string, req interface{}, rsp interface{}, extendHeader http.Header) error {
-	request, err := GenJsonRequest(url, req, extendHeader)
-	if err != nil {
-		return err
-	}
-	resp, err := httpcli.do3(request)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	err = IsStatusOK(resp)
-	if err != nil {
-		return err
-	}
-	body, err := ReadBody(resp)
+	body, err := httpcli.JsonPostBytes(url, req, extendHeader)
 	if err != nil {
 		return err
 	}
@@ -146,6 +96,28 @@ func (httpcli *HttpCli) JsonPostUnwrap(url string, req interface{}, rsp interfac
 		return err
 	}
 	return nil
+}
+
+// JsonPostBytes http post json  => []byte
+func (httpcli *HttpCli) JsonPostBytes(url string, req interface{}, extendHeader http.Header) ([]byte, error) {
+	request, err := GenJsonRequest(url, req, extendHeader)
+	if err != nil {
+		return EmptyBody, err
+	}
+	resp, err := httpcli.do3(request)
+	if err != nil {
+		return EmptyBody, err
+	}
+	defer resp.Body.Close()
+	err = IsStatusOK(resp)
+	if err != nil {
+		return EmptyBody, err
+	}
+	body, err := ReadBody(resp)
+	if err != nil {
+		return EmptyBody, err
+	}
+	return body, nil
 }
 
 func (httpcli *HttpCli) FormGet(url string, values url.Values, extendHeader http.Header) ([]byte, error) {
