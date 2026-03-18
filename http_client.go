@@ -1,6 +1,7 @@
 package httpcli
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -104,6 +105,30 @@ func (httpcli *HttpCli) JsonPostBytes(url string, req interface{}, extendHeader 
 	if err != nil {
 		return EmptyBody, err
 	}
+	resp, err := httpcli.do3(request)
+	if err != nil {
+		return EmptyBody, err
+	}
+	defer resp.Body.Close()
+	err = IsStatusOK(resp)
+	if err != nil {
+		return EmptyBody, err
+	}
+	body, err := ReadBody(resp)
+	if err != nil {
+		return EmptyBody, err
+	}
+	return body, nil
+}
+
+// JsonForward http forward json []byte  => rsp []byte
+func (httpcli *HttpCli) JsonForward(url string, requestBytes []byte, extendHeader http.Header) ([]byte, error) {
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(requestBytes))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	fillExtendHeader(request, extendHeader)
 	resp, err := httpcli.do3(request)
 	if err != nil {
 		return EmptyBody, err
