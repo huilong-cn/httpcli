@@ -29,14 +29,15 @@ func (httpcli *HttpCli) FormPost(url string, values url.Values, extendHeader htt
 		return EmptyBody, err
 	}
 	defer resp.Body.Close()
-	err = IsStatusOK(resp)
-	if err != nil {
-		return EmptyBody, err
-	}
 	body, err := ReadBody(resp)
 	if err != nil {
 		niuhe.LogError("PostRpc url : %s req : %v, err : %s", url, values, err)
 		return EmptyBody, err
+	}
+	err = IsStatusOK(resp)
+	if err != nil {
+		niuhe.LogError("status ! 200 OK url : %s req : %v, err : %s", url, values, err)
+		return body, err
 	}
 	return body, nil
 }
@@ -110,13 +111,14 @@ func (httpcli *HttpCli) JsonPostBytes(url string, req interface{}, extendHeader 
 		return EmptyBody, err
 	}
 	defer resp.Body.Close()
-	err = IsStatusOK(resp)
-	if err != nil {
-		return EmptyBody, err
-	}
 	body, err := ReadBody(resp)
 	if err != nil {
 		return EmptyBody, err
+	}
+	err = IsStatusOK(resp)
+	if err != nil {
+		niuhe.LogError("status ! 200 OK url : %s req : %v, err : %s", url, req, err)
+		return body, err
 	}
 	return body, nil
 }
@@ -134,13 +136,13 @@ func (httpcli *HttpCli) JsonForward(url string, requestBytes []byte, extendHeade
 		return EmptyBody, err
 	}
 	defer resp.Body.Close()
-	err = IsStatusOK(resp)
-	if err != nil {
-		return EmptyBody, err
-	}
 	body, err := ReadBody(resp)
 	if err != nil {
 		return EmptyBody, err
+	}
+	err = IsStatusOK(resp)
+	if err != nil {
+		return body, err
 	}
 	return body, nil
 }
@@ -159,6 +161,10 @@ func (httpcli *HttpCli) FormGet(url string, values url.Values, extendHeader http
 	if err != nil {
 		niuhe.LogError("DecodeWrap status :%s read resp.Body fail: %s", resp.Status, err.Error())
 		return EmptyBody, err
+	}
+	err = IsStatusOK(resp)
+	if err != nil {
+		return body, err
 	}
 	return body, err
 }
