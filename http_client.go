@@ -100,6 +100,29 @@ func (httpcli *HttpCli) JsonPostUnwrap(url string, req interface{}, rsp interfac
 	return nil
 }
 
+// PostBytes http post []byte  => rsp []byte
+func (httpcli *HttpCli) PostBytes(url string, requestBytes []byte, extendHeader http.Header) ([]byte, error) {
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(requestBytes))
+	if err != nil {
+		return nil, err
+	}
+	fillExtendHeader(request, extendHeader)
+	resp, err := httpcli.do3(request)
+	if err != nil {
+		return EmptyBody, err
+	}
+	defer resp.Body.Close()
+	body, err := ReadBody(resp)
+	if err != nil {
+		return EmptyBody, err
+	}
+	err = IsStatusOK(resp)
+	if err != nil {
+		return body, err
+	}
+	return body, nil
+}
+
 // JsonPostBytes http post json  => []byte
 func (httpcli *HttpCli) JsonPostBytes(url string, req interface{}, extendHeader http.Header) ([]byte, error) {
 	request, err := GenJsonRequest(url, req, extendHeader)

@@ -38,3 +38,11 @@ func TestFormGet(t *testing.T) {
 	}
 	t.Log(string(bytes))
 }
+
+func TestPostByte(t *testing.T) {
+	bytes, err := PostBytes("https://ipinfo.io/json", []byte{}, NonHeader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(string(bytes))
+}

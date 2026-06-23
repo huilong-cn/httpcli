@@ -34,3 +34,8 @@ func JsonPostUnwrap(url string, req interface{}, rsp interface{}, extendHeader h
 func JsonPostBytes(url string, req interface{}, extendHeader http.Header) ([]byte, error) {
 	return DefaultHttpClient().JsonPostBytes(url, req, extendHeader)
 }
+
+// PostBytes http post []byte rsp => []byte
+func PostBytes(url string, requestBytes []byte, extendHeader http.Header) ([]byte, error) {
+	return DefaultHttpClient().PostBytes(url, requestBytes, extendHeader)
+}
