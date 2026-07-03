@@ -16,3 +16,7 @@ func JsonGet(url string, values url.Values, rsp interface{}, extendHeader http.H
 func JsonGetUnwrap(url string, values url.Values, rsp interface{}, extendHeader http.Header) error {
 	return DefaultHttpClient().JsonGetUnwrap(url, values, rsp, extendHeader)
 }
+
+func HEAD(url string, extendHeader http.Header) error {
+	return DefaultHttpClient().HEAD(url, extendHeader)
+}

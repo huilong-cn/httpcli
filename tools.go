@@ -56,6 +56,18 @@ func GenUrlRequest(url string, values url.Values, extendHeader http.Header) (*ht
 }
 
 // genGetRequest 生成 Get url raw query request
+func GenHEADRequest(url string, extendHeader http.Header) (*http.Request, error) {
+	request, err := http.NewRequest(http.MethodHead, url, nil)
+	if err != nil {
+		niuhe.LogError("genGetRequest url : %s, err: %s", url, err.Error())
+		return nil, err
+	}
+	fillExtendHeader(request, extendHeader)
+
+	return request, nil
+}
+
+// genGetRequest 生成 Get url raw query request
 func GenFormRequest(url string, values url.Values, extendHeader http.Header) (*http.Request, error) {
 	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader([]byte(values.Encode())))
 	if err != nil {

@@ -170,6 +170,24 @@ func (httpcli *HttpCli) JsonForward(url string, requestBytes []byte, extendHeade
 	return body, nil
 }
 
+func (httpcli *HttpCli) HEAD(url string, extendHeader http.Header) error {
+	req, err := GenHEADRequest(url, extendHeader)
+	if err != nil {
+		return err
+	}
+	resp, err := httpcli.do3(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	io.Copy(io.Discard, resp.Body)
+	err = IsStatusOK(resp)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 func (httpcli *HttpCli) FormGet(url string, values url.Values, extendHeader http.Header) ([]byte, error) {
 	req, err := GenUrlRequest(url, values, extendHeader)
 	if err != nil {
